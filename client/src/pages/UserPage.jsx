@@ -10,7 +10,7 @@ export default function UserPage() {
   const nomorWhatsApp = '6285895783342';
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/layanan')
+    fetch('https://toko-joki.vercel.app/api/layanan')
       .then((res) => res.json())
       .then((data) => {
         setLayanan(data);
@@ -40,7 +40,7 @@ export default function UserPage() {
     };
 
     // Simpan ke database MongoDB via Backend
-    fetch('http://localhost:5000/api/pesanan', {
+    fetch('https://toko-joki.vercel.app/api/pesanan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dataPesanan)

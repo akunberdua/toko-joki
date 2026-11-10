@@ -35,21 +35,21 @@ export default function AdminPage() {
   };
 
   const fetchPesanan = () => {
-    fetch('http://localhost:5000/api/pesanan')
+    fetch('https://toko-joki.vercel.app/api/pesanan')
       .then((res) => res.json())
       .then((data) => setPesananList(data))
       .catch((err) => console.error('Gagal memuat pesanan:', err));
   };
 
   const fetchLayanan = () => {
-    fetch('http://localhost:5000/api/layanan')
+    fetch('https://toko-joki.vercel.app/api/layanan')
       .then((res) => res.json())
       .then((data) => setLayanan(data))
       .catch((err) => console.error('Gagal memuat layanan:', err));
   };
 
   const handleUpdateStatus = (id, statusBaru) => {
-    fetch(`http://localhost:5000/api/pesanan/${id}`, {
+    fetch(`https://toko-joki.vercel.app/api/pesanan/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: statusBaru })
@@ -62,7 +62,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!namaLayananBaru || !hargaBaru) return;
 
-    fetch('http://localhost:5000/api/layanan', {
+    fetch('https://toko-joki.vercel.app/api/layanan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -82,7 +82,7 @@ export default function AdminPage() {
 
   const handleHapusLayanan = (id) => {
     if (!confirm('Yakin ingin menghapus layanan ini?')) return;
-    fetch(`http://localhost:5000/api/layanan/${id}`, { method: 'DELETE' })
+    fetch(`https://toko-joki.vercel.app/api/layanan/${id}`, { method: 'DELETE' })
       .then((res) => res.json())
       .then(() => fetchLayanan());
   };
