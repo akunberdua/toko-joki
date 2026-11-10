@@ -1,7 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+require('dotenv').config(); // juga baca dari root jika ada
 
 const Layanan = require('./models/layanan.js');
 const Pesanan = require('./models/pesanan.js');
@@ -13,9 +15,13 @@ app.use(cors());
 app.use(express.json());
 
 // Koneksi ke MongoDB
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('✅ Berhasil terhubung ke MongoDB!'))
-.catch((err) => console.error('❌ Gagal terhubung ke MongoDB:', err));
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('✅ Berhasil terhubung ke MongoDB!'))
+    .catch((err) => console.error('❌ Gagal terhubung ke MongoDB:', err));
+} else {
+  console.warn('⚠️ MONGO_URI tidak terdefinisi di environment variables.');
+}
 
 // --- API ROUTES ---
 
@@ -87,6 +93,16 @@ app.patch('/api/pesanan/:id', async (req, res) => {
   }
 });
 
+// 2. Hapus Pesanan (Panel Admin)
+app.delete('/api/pesanan/:id', async (req, res) => {
+  try {
+    await Pesanan.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Pesanan berhasil dihapus!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 2. Tambah Layanan Baru (Kelola Harga)
 app.post('/api/layanan', async (req, res) => {
   try {
@@ -108,9 +124,11 @@ app.delete('/api/layanan/:id', async (req, res) => {
   }
 }); 
 
-app.listen(PORT, () => {
-  console.log(`Server berjalan di http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server berjalan di http://localhost:${PORT}`);
+  });
+}
 
 // Di bagian akhir file server.js Anda, tambahkan/pastikan ada kode ini:
 module.exports = app;

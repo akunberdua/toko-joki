@@ -1,155 +1,420 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL, WHATSAPP_NUMBER, DEFAULT_SERVICES } from '../config';
 
 export default function UserPage() {
-  const [layanan, setLayanan] = useState([]);
-  const [selectedLayanan, setSelectedLayanan] = useState('');
+  const [layanan, setLayanan] = useState(DEFAULT_SERVICES);
+  const [selectedLayanan, setSelectedLayanan] = useState(DEFAULT_SERVICES[0]?.nama || '');
   const [metodeBayar, setMetodeBayar] = useState('Transfer Bank');
   const [namaUser, setNamaUser] = useState('');
+  const [idGame, setIdGame] = useState('');
+  const [catatan, setCatatan] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderNotice, setOrderNotice] = useState(null);
 
-  // Ganti dengan Nomor WhatsApp Anda (contoh: 6281234567890)
-  const nomorWhatsApp = '6285895783342';
-
+  // Ambil layanan dari Backend jika tersedia
   useEffect(() => {
-    fetch('https://toko-joki.vercel.app/api/layanan')
-      .then((res) => res.json())
-      .then((data) => {
-        setLayanan(data);
-        if (data.length > 0) setSelectedLayanan(data[0].nama);
+    fetch(`${API_BASE_URL}/layanan`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Status: ' + res.status);
+        return res.json();
       })
-      .catch((err) => console.error('Gagal memuat layanan:', err));
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setLayanan(data);
+          // Pastikan pilihan saat ini masih valid atau set default ke item pertama
+          setSelectedLayanan((prev) => {
+            if (data.some((item) => item.nama === prev)) return prev;
+            return data[0]?.nama || '';
+          });
+        }
+      })
+      .catch((err) => {
+        console.warn('Backend layanan offline, memakai katalog default:', err.message);
+      });
   }, []);
 
-  const handlePesan = (e) => {
+  // Temukan item layanan terpilih
+  const itemDipilih = layanan.find((l) => l.nama === selectedLayanan) || layanan[0];
+  const hargaNumber = itemDipilih ? Number(itemDipilih.harga) : 0;
+  const hargaFormatted = `Rp ${hargaNumber.toLocaleString('id-ID')}`;
+
+  const handlePesan = async (e) => {
     e.preventDefault();
-    if (!selectedLayanan || !namaUser) {
-      alert('Mohon pilih layanan dan isi nama user!');
+
+    if (!namaUser.trim()) {
+      alert('Mohon masukkan Nama Anda!');
       return;
     }
 
-    const itemDipilih = layanan.find((l) => l.nama === selectedLayanan);
-    const hargaTotal = itemDipilih ? `Rp ${itemDipilih.harga.toLocaleString()}` : 'Rp 0';
-    const idUnik = 'USER-' + Math.floor(100 + Math.random() * 900);
+    if (!selectedLayanan) {
+      alert('Mohon pilih paket layanan joki!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setOrderNotice(null);
+
+    const idUnik = 'USER-' + Math.floor(1000 + Math.random() * 9000);
 
     const dataPesanan = {
       idUser: idUnik,
-      namaUser: namaUser,
+      namaUser: namaUser.trim(),
       layanan: selectedLayanan,
       metode: metodeBayar,
-      total: hargaTotal,
+      total: hargaFormatted,
       status: 'Menunggu'
     };
 
-    // Simpan ke database MongoDB via Backend
-    fetch('https://toko-joki.vercel.app/api/pesanan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataPesanan)
-    })
-      .then((res) => res.json())
-      .then(() => {
-        const pesanWap = `Halo Admin Elite Boosting, saya ingin memesan layanan joki:\n\n` +
-          `🆔 ID User: ${idUnik}\n` +
-          `👤 Nama User: ${namaUser}\n` +
-          `🎮 Layanan: ${selectedLayanan}\n` +
-          `💳 Metode Pembayaran: ${metodeBayar}\n` +
-          `💰 Total: ${hargaTotal}\n\n` +
-          `Mohon segera diproses ya kak. Terima kasih!`;
+    // Susun pesan WhatsApp yang rapi
+    const pesanWap =
+      `Halo Admin Elite Boosting, saya ingin memesan jasa joki:\n\n` +
+      `🆔 No. Pesanan: ${idUnik}\n` +
+      `👤 Nama Pelanggan: ${namaUser.trim()}\n` +
+      (idGame.trim() ? `🎮 ID/Nickname Game: ${idGame.trim()}\n` : '') +
+      `📦 Paket Layanan: ${selectedLayanan}\n` +
+      `💳 Metode Bayar: ${metodeBayar}\n` +
+      `💰 Total: ${hargaFormatted}\n` +
+      (catatan.trim() ? `📝 Catatan: ${catatan.trim()}\n` : '') +
+      `\nMohon segera diproses dan dikonfirmasi nomor rekening / barcode pembayarannya ya min. Terima kasih!`;
 
-        const urlWhatsApp = `https://wa.me/${nomorWhatsApp}?text=${encodeURIComponent(pesanWap)}`;
-        window.open(urlWhatsApp, '_blank');
-        setNamaUser('');
-      })
-      .catch((err) => {
-        console.error('Gagal menyimpan pesanan:', err);
-        alert('Terjadi kesalahan saat memproses pesanan.');
+    const urlWhatsApp = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(pesanWap)}`;
+
+    // Coba kirim data pesanan ke backend API
+    try {
+      await fetch(`${API_BASE_URL}/pesanan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataPesanan)
       });
+    } catch (err) {
+      console.warn('Gagal mencatat pesanan ke backend (offline mode):', err);
+    } finally {
+      setIsSubmitting(false);
+
+      // Buka tab WhatsApp
+      const opened = window.open(urlWhatsApp, '_blank');
+
+      // Tampilkan notifikasi konfirmasi di halaman
+      setOrderNotice({
+        id: idUnik,
+        url: urlWhatsApp,
+        openedDirectly: !!opened
+      });
+
+      // Reset form input
+      setNamaUser('');
+      setIdGame('');
+      setCatatan('');
+    }
   };
 
-  const renderKategoriBlock = (title, categoryName, color = '#10b981') => {
-    const filtered = layanan.filter((item) => item.kategori === categoryName);
-    if (filtered.length === 0) return null;
+  // Ambil daftar kategori unik dari data layanan secara dinamis
+  const categories = Array.from(new Set(layanan.map((item) => item.kategori || 'Lainnya')));
 
-    return (
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ fontSize: '14px', color: color, fontWeight: 'bold' }}>{title}</label>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '8px' }}>
-          {filtered.map((item) => (
-            <div 
-              key={item._id}
-              onClick={() => setSelectedLayanan(item.nama)}
-              style={{ 
-                background: selectedLayanan === item.nama ? '#0b0f19' : '#1a2234', 
-                border: selectedLayanan === item.nama ? '2px solid #10b981' : '1px solid #2a3447',
-                padding: '12px 15px', borderRadius: '8px', cursor: 'pointer'
-              }}
-            >
-              <div style={{ fontSize: '13px', marginBottom: '4px' }}>{item.nama}</div>
-              <div style={{ fontWeight: 'bold', color: '#10b981' }}>Rp {item.harga.toLocaleString()}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+  const getCategoryMeta = (kategori) => {
+    switch (kategori) {
+      case 'Push Divisi':
+        return { icon: '🏆', color: '#10b981', badge: 'Harga per divisi' };
+      case 'Bundling Hemat':
+        return { icon: '⚡', color: '#f59e0b', badge: 'Paket Promo Hemat' };
+      case 'Paket Event':
+        return { icon: '🎯', color: '#3b82f6', badge: 'Event & Misi' };
+      default:
+        return { icon: '⭐', color: '#a855f7', badge: 'Paket Spesial' };
+    }
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '40px auto', background: '#131b2e', padding: '30px', borderRadius: '12px', border: '1px solid #1f293d', color: '#fff' }}>
-      <span style={{ color: '#10b981', fontSize: '14px', fontWeight: 'bold' }}>[ELITE BOOSTING]</span>
-      <h2 style={{ margin: '10px 0 5px 0' }}>Proses Pembelian</h2>
-      <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '25px' }}>Pilih kriteria divisi yang ingin dijoki dan isi data pembelian.</p>
-
-      <form onSubmit={handlePesan}>
-        {renderKategoriBlock('🏆 PUSH DIVISI (harga per divisi)', 'Push Divisi', '#10b981')}
-        {renderKategoriBlock('⚡ BUNDLING HEMAT!', 'Bundling Hemat', '#f59e0b')}
-        {renderKategoriBlock('⚽ PAKET EVENT', 'Paket Event', '#3b82f6')}
-
-        <label style={{ fontSize: '14px', color: '#9ca3af', display: 'block', marginBottom: '8px' }}>Metode Pembelian</label>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          {['Transfer Bank', 'E-Wallet', 'QRIS'].map((metode) => (
+    <div style={{ maxWidth: '680px', margin: '0 auto', color: '#f1f5f9' }}>
+      {/* Banner Notifikasi Pesanan Berhasil */}
+      {orderNotice && (
+        <div style={{
+          background: 'rgba(16, 185, 129, 0.1)',
+          border: '1px solid #10b981',
+          padding: '16px 20px',
+          borderRadius: '12px',
+          marginBottom: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontWeight: 'bold', color: '#10b981', fontSize: '15px' }}>
+              ✅ Pesanan {orderNotice.id} Berhasil Dibuat!
+            </span>
             <button
-              type="button"
-              key={metode}
-              onClick={() => setMetodeBayar(metode)}
+              onClick={() => setOrderNotice(null)}
+              style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '16px' }}
+            >
+              ✕
+            </button>
+          </div>
+          <p style={{ fontSize: '13px', color: '#cbd5e1', margin: 0 }}>
+            Detail pesanan Anda telah disiapkan untuk WhatsApp admin. Jika tab WhatsApp tidak terbuka otomatis, klik tombol di bawah:
+          </p>
+          <div>
+            <a
+              href={orderNotice.url}
+              target="_blank"
+              rel="noreferrer"
               style={{
-                flex: 1, padding: '10px', background: metodeBayar === metode ? '#131b2e' : '#0b0f19',
-                border: metodeBayar === metode ? '1px solid #10b981' : '1px solid #2a3447',
-                color: '#fff', borderRadius: '6px', cursor: 'pointer'
+                display: 'inline-block',
+                marginTop: '6px',
+                background: '#10b981',
+                color: '#000',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                textDecoration: 'none'
               }}
             >
-              {metode}
-            </button>
-          ))}
+              📲 Buka WhatsApp Sekarang
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Header Form */}
+      <div style={{
+        background: '#0e1424',
+        padding: '28px 24px',
+        borderRadius: '16px',
+        border: '1px solid #1e2638',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.3)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <span style={{
+              color: '#10b981',
+              fontSize: '12px',
+              fontWeight: 800,
+              letterSpacing: '1px',
+              textTransform: 'uppercase'
+            }}>
+              [ELITE BOOSTING • PRO SERVICE]
+            </span>
+            <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '8px 0 4px 0', color: '#fff' }}>
+              Proses Pembelian Joki
+            </h1>
+            <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}>
+              Pilih kriteria divisi atau paket yang diinginkan, lalu isi data pemesan.
+            </p>
+          </div>
         </div>
 
-        <label style={{ fontSize: '14px', color: '#9ca3af', display: 'block', marginBottom: '8px' }}>Nama User</label>
-        <input 
-          type="text" 
-          placeholder="Masukkan nama user" 
-          value={namaUser}
-          onChange={(e) => setNamaUser(e.target.value)}
-          style={{ width: '100%', padding: '12px', background: '#0b0f19', border: '1px solid #2a3447', borderRadius: '6px', color: '#fff', marginBottom: '20px', boxSizing: 'border-box' }}
-        />
+        <form onSubmit={handlePesan} style={{ marginTop: '24px' }}>
+          {/* Loop Kategori Layanan Dinamis */}
+          {categories.map((kategori) => {
+            const items = layanan.filter((item) => (item.kategori || 'Lainnya') === kategori);
+            if (items.length === 0) return null;
+            const meta = getCategoryMeta(kategori);
 
-        <div style={{ background: '#0b0f19', padding: '15px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ fontSize: '12px', color: '#9ca3af' }}>Layanan</div>
-            <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{selectedLayanan || '-'}</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '12px', color: '#9ca3af' }}>Total</div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#10b981' }}>
-              {selectedLayanan ? `Rp ${layanan.find(l => l.nama === selectedLayanan)?.harga.toLocaleString()}` : 'Rp 0'}
+            return (
+              <div key={kategori} style={{ marginBottom: '22px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <label style={{ fontSize: '13px', color: meta.color, fontWeight: 700, letterSpacing: '0.5px' }}>
+                    {meta.icon} {kategori.toUpperCase()}
+                  </label>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>{meta.badge}</span>
+                </div>
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                  gap: '10px'
+                }}>
+                  {items.map((item) => {
+                    const isSelected = selectedLayanan === item.nama;
+                    return (
+                      <div
+                        key={item._id || item.nama}
+                        onClick={() => setSelectedLayanan(item.nama)}
+                        style={{
+                          background: isSelected ? 'rgba(16, 185, 129, 0.08)' : '#07090e',
+                          border: isSelected ? '2px solid #10b981' : '1px solid #1e2638',
+                          padding: '12px 14px',
+                          borderRadius: '10px',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          boxShadow: isSelected ? '0 0 12px rgba(16,185,129,0.2)' : 'none'
+                        }}
+                      >
+                        <div style={{ fontSize: '13.5px', fontWeight: 600, color: isSelected ? '#fff' : '#e2e8f0', marginBottom: '6px' }}>
+                          {item.nama}
+                        </div>
+                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '15px' }}>
+                          Rp {Number(item.harga).toLocaleString('id-ID')}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Metode Pembayaran */}
+          <div style={{ marginBottom: '22px' }}>
+            <label style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+              💳 Metode Pembayaran
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+              {['Transfer Bank', 'E-Wallet', 'QRIS'].map((metode) => {
+                const isSelected = metodeBayar === metode;
+                return (
+                  <button
+                    type="button"
+                    key={metode}
+                    onClick={() => setMetodeBayar(metode)}
+                    style={{
+                      padding: '12px',
+                      background: isSelected ? 'rgba(16, 185, 129, 0.12)' : '#07090e',
+                      border: isSelected ? '1px solid #10b981' : '1px solid #1e2638',
+                      color: isSelected ? '#10b981' : '#cbd5e1',
+                      borderRadius: '8px',
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {metode}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
 
-        <button 
-          type="submit"
-          style={{ width: '100%', background: '#10b981', color: '#000', border: 'none', padding: '14px', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-        >
-          Lanjutkan Pembayaran via WhatsApp
-        </button>
-      </form>
+          {/* Form Data Pelanggan */}
+          <div style={{ marginBottom: '18px' }}>
+            <label style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+              👤 Nama Pembeli <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="Contoh: Budi Santoso"
+              value={namaUser}
+              onChange={(e) => setNamaUser(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                background: '#07090e',
+                border: '1px solid #1e2638',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '22px' }}>
+            <div>
+              <label style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+                🎮 ID / Akun Game (Opsional)
+              </label>
+              <input
+                type="text"
+                placeholder="Contoh: 12345678 (Server 1234)"
+                value={idGame}
+                onChange={(e) => setIdGame(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  background: '#07090e',
+                  border: '1px solid #1e2638',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '14px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+                📝 Catatan Khusus (Opsional)
+              </label>
+              <input
+                type="text"
+                placeholder="Contoh: Request main hero tertentu"
+                value={catatan}
+                onChange={(e) => setCatatan(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  background: '#07090e',
+                  border: '1px solid #1e2638',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '14px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Ringkasan Biaya */}
+          <div style={{
+            background: '#07090e',
+            border: '1px solid #1e2638',
+            padding: '16px 20px',
+            borderRadius: '10px',
+            marginBottom: '20px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '13px', color: '#94a3b8' }}>Paket Dipilih</span>
+              <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#f1f5f9' }}>{selectedLayanan || '-'}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '13px', color: '#94a3b8' }}>Metode Bayar</span>
+              <span style={{ fontSize: '13.5px', color: '#cbd5e1' }}>{metodeBayar}</span>
+            </div>
+            <div style={{ height: '1px', background: '#1e2638', margin: '10px 0' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#e2e8f0' }}>Total Biaya</span>
+              <span style={{ fontSize: '18px', fontWeight: 800, color: '#10b981' }}>{hargaFormatted}</span>
+            </div>
+          </div>
+
+          {/* Tombol Aksi */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            style={{
+              width: '100%',
+              background: isSubmitting ? '#059669' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#000',
+              border: 'none',
+              padding: '15px',
+              borderRadius: '10px',
+              fontWeight: 800,
+              fontSize: '15px',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              boxShadow: '0 4px 15px rgba(16,185,129,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'transform 0.1s ease'
+            }}
+          >
+            {isSubmitting ? (
+              <span>⏳ Menghubungkan ke WhatsApp...</span>
+            ) : (
+              <span>💬 Lanjutkan Pembayaran via WhatsApp</span>
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
