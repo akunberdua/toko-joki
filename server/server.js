@@ -111,3 +111,6 @@ app.delete('/api/layanan/:id', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server berjalan di http://localhost:${PORT}`);
 });
+
+// Di bagian akhir file server.js Anda, tambahkan/pastikan ada kode ini:
+module.exports = app;

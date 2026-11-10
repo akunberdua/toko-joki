@@ -7,7 +7,7 @@ export default function UserPage() {
   const [namaUser, setNamaUser] = useState('');
 
   // Ganti dengan Nomor WhatsApp Anda (contoh: 6281234567890)
-  const nomorWhatsApp = '6283848381283';
+  const nomorWhatsApp = '6285895783342';
 
   useEffect(() => {
     fetch('http://localhost:5000/api/layanan')
