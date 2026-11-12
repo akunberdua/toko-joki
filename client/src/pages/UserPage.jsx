@@ -297,7 +297,7 @@ export default function UserPage() {
             <input
               type="text"
               required
-              placeholder="Contoh: Budi Santoso"
+              placeholder="Nama Pembeli"
               value={namaUser}
               onChange={(e) => setNamaUser(e.target.value)}
               style={{
@@ -321,7 +321,7 @@ export default function UserPage() {
               </label>
               <input
                 type="text"
-                placeholder="Contoh: 12345678 (Server 1234)"
+                placeholder="Id akun"
                 value={idGame}
                 onChange={(e) => setIdGame(e.target.value)}
                 style={{
@@ -344,7 +344,7 @@ export default function UserPage() {
               </label>
               <input
                 type="text"
-                placeholder="Contoh: Request main hero tertentu"
+                placeholder="Catatan Khusus"
                 value={catatan}
                 onChange={(e) => setCatatan(e.target.value)}
                 style={{

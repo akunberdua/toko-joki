@@ -85,7 +85,7 @@ export default function AdminPage() {
       setLoginError('');
       setPasswordInput('');
     } else {
-      setLoginError('Password salah! Silakan coba lagi (Default: admin123)');
+      setLoginError('Password salah! Silakan coba lagi');
     }
   };
 
@@ -267,7 +267,7 @@ export default function AdminPage() {
             type="password"
             autoFocus
             required
-            placeholder="Masukkan Password (default: admin123)"
+            placeholder="Masukkan Password"
             value={passwordInput}
             onChange={(e) => setPasswordInput(e.target.value)}
             style={{
