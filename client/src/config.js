@@ -9,6 +9,17 @@ export const WHATSAPP_NUMBER = '6285895783342';
 // Password Default Admin
 export const ADMIN_DEFAULT_PASSWORD = 'admin123';
 
+// Konfigurasi E-Wallet
+export const EWALLET_CONFIG = {
+  number: '085895783342',
+  holderName: 'ELITE BOOSTING',
+  options: [
+    { id: 'DANA', name: 'DANA', icon: '💙', color: '#108ee9' },
+    { id: 'ShopeePay', name: 'ShopeePay', icon: '🧡', color: '#ee4d2d' },
+    { id: 'GoPay', name: 'GoPay', icon: '💚', color: '#00aed6' }
+  ]
+};
+
 // Data Layanan Default (digunakan sebagai fallback jika backend/database belum berjalan)
 export const DEFAULT_SERVICES = [
   // Push Divisi
@@ -25,3 +36,4 @@ export const DEFAULT_SERVICES = [
   { _id: 'def-7', nama: 'Clear 1 Event Mingguan', harga: 15000, kategori: 'Paket Event' },
   { _id: 'def-8', nama: 'Borongan Semua Event', harga: 35000, kategori: 'Paket Event' }
 ];
+

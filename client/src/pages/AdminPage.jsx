@@ -207,7 +207,8 @@ export default function AdminPage() {
       const matchSearch =
         p.namaUser?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.idUser?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.layanan?.toLowerCase().includes(searchQuery.toLowerCase());
+        p.layanan?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.metode?.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchStatus = filterStatus === 'Semua' || p.status === filterStatus;
       return matchSearch && matchStatus;
