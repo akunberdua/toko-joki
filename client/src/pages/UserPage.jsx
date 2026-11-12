@@ -123,9 +123,7 @@ export default function UserPage() {
     } finally {
       setIsSubmitting(false);
 
-      // PENTING: JANGAN langsung buka WhatsApp!
-      // Tampilkan terlebih dahulu halaman pembayaran pada gambar (QRIS / E-Wallet) agar user bisa scan & bayar.
-      // User baru akan diarahkan ke WhatsApp saat mengklik tombol "Lanjut ke WhatsApp" di halaman tersebut.
+      // PENTING: Tampilkan halaman pembayaran (QRIS / E-Wallet) terlebih dahulu agar user bisa scan & bayar.
       const orderInfo = {
         id: idUnik,
         url: urlWhatsApp,
@@ -162,36 +160,36 @@ export default function UserPage() {
   };
 
   return (
-    <div style={{ maxWidth: '680px', margin: '0 auto', color: '#f1f5f9' }}>
+    <div style={{ maxWidth: '680px', margin: '0 auto', color: '#f1f5f9', width: '100%' }}>
       {/* Banner Notifikasi Pesanan Terakhir */}
       {orderNotice && (
         <div style={{
           background: 'rgba(16, 185, 129, 0.1)',
           border: '1px solid #10b981',
-          padding: '16px 20px',
+          padding: '14px 16px',
           borderRadius: '12px',
-          marginBottom: '24px',
+          marginBottom: '20px',
           display: 'flex',
           flexDirection: 'column',
           gap: '8px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontWeight: 'bold', color: '#10b981', fontSize: '15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+            <span style={{ fontWeight: 'bold', color: '#10b981', fontSize: '14.5px' }}>
               ✅ Pesanan {orderNotice.id} Siap Dibayar! ({orderNotice.total})
             </span>
             <button
               onClick={() => setOrderNotice(null)}
-              style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '16px' }}
+              style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '18px', padding: '0 4px' }}
             >
               ✕
             </button>
           </div>
-          <p style={{ fontSize: '13px', color: '#cbd5e1', margin: 0 }}>
+          <p style={{ fontSize: '13px', color: '#cbd5e1', margin: 0, lineHeight: 1.4 }}>
             {orderNotice.isQris
-              ? 'Silakan scan foto QRIS untuk pembayaran, lalu setelah selesai klik tombol Lanjut ke WhatsApp untuk mengirimkan bukti transfer.'
+              ? 'Silakan scan foto QRIS untuk pembayaran, lalu klik tombol Lanjut ke WhatsApp untuk mengirimkan bukti transfer.'
               : `Silakan transfer via ${orderNotice.metode} ke nomor ${EWALLET_CONFIG.number}, lalu kirimkan bukti transfer ke WhatsApp.`}
           </p>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '6px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
             <button
               type="button"
               onClick={() => setModalData(orderNotice)}
@@ -199,9 +197,9 @@ export default function UserPage() {
                 background: '#10b981',
                 color: '#000',
                 border: 'none',
-                padding: '8px 16px',
+                padding: '8px 14px',
                 borderRadius: '6px',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 fontWeight: 700,
                 cursor: 'pointer',
                 display: 'inline-flex',
@@ -225,7 +223,7 @@ export default function UserPage() {
                 padding: '8px 14px',
                 borderRadius: '6px',
                 fontWeight: 600,
-                fontSize: '13px',
+                fontSize: '12.5px',
                 textDecoration: 'none'
               }}
             >
@@ -236,34 +234,26 @@ export default function UserPage() {
       )}
 
       {/* Header Form */}
-      <div style={{
-        background: '#0e1424',
-        padding: '28px 24px',
-        borderRadius: '16px',
-        border: '1px solid #1e2638',
-        boxShadow: '0 8px 30px rgba(0,0,0,0.3)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
-          <div>
-            <span style={{
-              color: '#10b981',
-              fontSize: '12px',
-              fontWeight: 800,
-              letterSpacing: '1px',
-              textTransform: 'uppercase'
-            }}>
-              [ELITE BOOSTING • PRO SERVICE]
-            </span>
-            <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '8px 0 4px 0', color: '#fff' }}>
-              Proses Pembelian Joki
-            </h1>
-            <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}>
-              Pilih paket yang diinginkan, tentukan metode e-wallet / QRIS, lalu isi data pemesan.
-            </p>
-          </div>
+      <div className="user-card">
+        <div>
+          <span style={{
+            color: '#10b981',
+            fontSize: '11px',
+            fontWeight: 800,
+            letterSpacing: '1px',
+            textTransform: 'uppercase'
+          }}>
+            [ELITE BOOSTING • PRO SERVICE]
+          </span>
+          <h1 style={{ fontSize: 'clamp(20px, 4.5vw, 26px)', fontWeight: 800, margin: '6px 0 4px 0', color: '#fff' }}>
+            Proses Pembelian Joki
+          </h1>
+          <p style={{ color: '#94a3b8', fontSize: '13.5px', margin: 0 }}>
+            Pilih paket yang diinginkan, tentukan metode e-wallet / QRIS, lalu isi data pemesan.
+          </p>
         </div>
 
-        <form onSubmit={handlePesan} style={{ marginTop: '24px' }}>
+        <form onSubmit={handlePesan} style={{ marginTop: '22px' }}>
           {/* Loop Kategori Layanan Dinamis */}
           {categories.map((kategori) => {
             const items = layanan.filter((item) => (item.kategori || 'Lainnya') === kategori);
@@ -271,19 +261,15 @@ export default function UserPage() {
             const meta = getCategoryMeta(kategori);
 
             return (
-              <div key={kategori} style={{ marginBottom: '22px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <label style={{ fontSize: '13px', color: meta.color, fontWeight: 700, letterSpacing: '0.5px' }}>
+              <div key={kategori} style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '4px' }}>
+                  <label style={{ fontSize: '12.5px', color: meta.color, fontWeight: 700, letterSpacing: '0.5px' }}>
                     {meta.icon} {kategori.toUpperCase()}
                   </label>
                   <span style={{ fontSize: '11px', color: '#64748b' }}>{meta.badge}</span>
                 </div>
 
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                  gap: '10px'
-                }}>
+                <div className="services-grid">
                   {items.map((item) => {
                     const isSelected = selectedLayanan === item.nama;
                     return (
@@ -303,10 +289,10 @@ export default function UserPage() {
                           boxShadow: isSelected ? '0 0 12px rgba(16,185,129,0.2)' : 'none'
                         }}
                       >
-                        <div style={{ fontSize: '13.5px', fontWeight: 600, color: isSelected ? '#fff' : '#e2e8f0', marginBottom: '6px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: isSelected ? '#fff' : '#e2e8f0', marginBottom: '6px' }}>
                           {item.nama}
                         </div>
-                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '15px' }}>
+                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '14.5px' }}>
                           Rp {Number(item.harga).toLocaleString('id-ID')}
                         </div>
                       </div>
@@ -318,8 +304,8 @@ export default function UserPage() {
           })}
 
           {/* Metode Pembayaran (Bank dihapus, hanya QRIS & E-Wallet dengan Logo Resmi) */}
-          <div style={{ marginBottom: '22px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '4px' }}>
               <label style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 600 }}>
                 💳 Pilih Metode Pembayaran
               </label>
@@ -329,30 +315,30 @@ export default function UserPage() {
             </div>
 
             {/* Tombol Kategori Utama: QRIS vs E-Wallet dengan Logo */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+            <div className="payment-cat-grid">
               {/* Pilihan QRIS */}
               <button
                 type="button"
                 onClick={() => setMetodeKategori('QRIS')}
                 style={{
-                  padding: '12px 14px',
+                  padding: '12px',
                   background: metodeKategori === 'QRIS' ? 'rgba(16, 185, 129, 0.12)' : '#07090e',
                   border: metodeKategori === 'QRIS' ? '2px solid #10b981' : '1px solid #1e2638',
                   color: metodeKategori === 'QRIS' ? '#10b981' : '#cbd5e1',
                   borderRadius: '10px',
                   fontWeight: 700,
-                  fontSize: '13.5px',
+                  fontSize: '13px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                   textAlign: 'left',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px'
+                  gap: '10px'
                 }}
               >
                 <div style={{
-                  width: '42px',
-                  height: '42px',
+                  width: '40px',
+                  height: '40px',
                   background: '#ffffff',
                   borderRadius: '8px',
                   padding: '4px',
@@ -368,11 +354,11 @@ export default function UserPage() {
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 </div>
-                <div>
-                  <div style={{ color: metodeKategori === 'QRIS' ? '#fff' : '#e2e8f0', fontWeight: 700 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ color: metodeKategori === 'QRIS' ? '#fff' : '#e2e8f0', fontWeight: 700, fontSize: '13.5px' }}>
                     QRIS (Rekomendasi)
                   </div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     Scan Semua E-Wallet & Bank
                   </div>
                 </div>
@@ -383,25 +369,25 @@ export default function UserPage() {
                 type="button"
                 onClick={() => setMetodeKategori('E-Wallet')}
                 style={{
-                  padding: '12px 14px',
+                  padding: '12px',
                   background: metodeKategori === 'E-Wallet' ? 'rgba(56, 189, 248, 0.12)' : '#07090e',
                   border: metodeKategori === 'E-Wallet' ? '2px solid #38bdf8' : '1px solid #1e2638',
                   color: metodeKategori === 'E-Wallet' ? '#38bdf8' : '#cbd5e1',
                   borderRadius: '10px',
                   fontWeight: 700,
-                  fontSize: '13.5px',
+                  fontSize: '13px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                   textAlign: 'left',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px'
+                  gap: '10px'
                 }}
               >
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '3px',
                   flexShrink: 0
                 }}>
                   <img
@@ -420,11 +406,11 @@ export default function UserPage() {
                     style={{ width: '22px', height: '22px', borderRadius: '4px', objectFit: 'cover' }}
                   />
                 </div>
-                <div>
-                  <div style={{ color: metodeKategori === 'E-Wallet' ? '#fff' : '#e2e8f0', fontWeight: 700 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ color: metodeKategori === 'E-Wallet' ? '#fff' : '#e2e8f0', fontWeight: 700, fontSize: '13.5px' }}>
                     E-Wallet
                   </div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     DANA, ShopeePay, GoPay
                   </div>
                 </div>
@@ -437,17 +423,17 @@ export default function UserPage() {
                 background: '#07090e',
                 border: '1px solid #1e2638',
                 borderRadius: '10px',
-                padding: '14px 16px',
+                padding: '12px 14px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '14px'
+                gap: '12px'
               }}>
                 <div style={{
-                  width: '56px',
-                  height: '56px',
+                  width: '50px',
+                  height: '50px',
                   background: '#ffffff',
-                  borderRadius: '10px',
-                  padding: '6px',
+                  borderRadius: '8px',
+                  padding: '5px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -465,14 +451,14 @@ export default function UserPage() {
                     }}
                   />
                 </div>
-                <div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#fff' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
                     QRIS (ELITE BOOSTING - GAME)
                   </div>
                   <div style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: '2px' }}>
                     NMID: ID1026637981352 • Satu QRIS untuk Semua
                   </div>
-                  <div style={{ fontSize: '11px', color: '#10b981', marginTop: '4px' }}>
+                  <div style={{ fontSize: '11px', color: '#10b981', marginTop: '3px' }}>
                     ✔ Mendukung DANA, GoPay, OVO, ShopeePay & M-Banking
                   </div>
                 </div>
@@ -485,13 +471,13 @@ export default function UserPage() {
                 background: '#07090e',
                 border: '1px solid #1e2638',
                 borderRadius: '10px',
-                padding: '14px 16px'
+                padding: '12px 14px'
               }}>
                 <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px', fontWeight: 600 }}>
                   Pilih Layanan E-Wallet:
                 </div>
                 {/* Pilihan DANA, ShopeePay, GoPay dengan LOGO ASLI */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                <div className="ewallet-sub-grid">
                   {EWALLET_CONFIG.options.map((ew) => {
                     const isSelected = selectedEwallet === ew.id;
                     const logoSrc = EWALLET_LOGOS[ew.id];
@@ -501,18 +487,18 @@ export default function UserPage() {
                         key={ew.id}
                         onClick={() => setSelectedEwallet(ew.id)}
                         style={{
-                          padding: '10px 8px',
+                          padding: '9px 6px',
                           background: isSelected ? 'rgba(56, 189, 248, 0.15)' : '#0e1424',
                           border: isSelected ? `2px solid ${ew.color}` : '1px solid #1e2638',
                           borderRadius: '8px',
                           color: isSelected ? '#fff' : '#cbd5e1',
                           fontWeight: 700,
-                          fontSize: '12.5px',
+                          fontSize: '12px',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '8px',
+                          gap: '6px',
                           transition: 'all 0.15s ease'
                         }}
                       >
@@ -520,14 +506,15 @@ export default function UserPage() {
                           src={logoSrc}
                           alt={ew.name}
                           style={{
-                            width: '24px',
-                            height: '24px',
+                            width: '22px',
+                            height: '22px',
                             borderRadius: '4px',
                             objectFit: 'contain',
-                            background: ew.id === 'ShopeePay' ? '#fff' : 'transparent'
+                            background: ew.id === 'ShopeePay' ? '#fff' : 'transparent',
+                            flexShrink: 0
                           }}
                         />
-                        <span>{ew.name}</span>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ew.name}</span>
                       </button>
                     );
                   })}
@@ -537,7 +524,7 @@ export default function UserPage() {
           </div>
 
           {/* Form Data Pelanggan */}
-          <div style={{ marginBottom: '18px' }}>
+          <div style={{ marginBottom: '16px' }}>
             <label style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
               👤 Nama Pengguna <span style={{ color: '#ef4444' }}>*</span>
             </label>
@@ -561,7 +548,7 @@ export default function UserPage() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '22px' }}>
+          <div className="form-2col">
             <div>
               <label style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
                 🎮 ID / Akun Game (Opsional)
@@ -613,24 +600,24 @@ export default function UserPage() {
           <div style={{
             background: '#07090e',
             border: '1px solid #1e2638',
-            padding: '16px 20px',
+            padding: '14px 16px',
             borderRadius: '10px',
-            marginBottom: '20px'
+            marginBottom: '18px'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '13px', color: '#94a3b8' }}>Paket Dipilih</span>
-              <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#f1f5f9' }}>{selectedLayanan || '-'}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '4px' }}>
+              <span style={{ fontSize: '12.5px', color: '#94a3b8' }}>Paket Dipilih</span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#f1f5f9' }}>{selectedLayanan || '-'}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '13px', color: '#94a3b8' }}>Metode Bayar</span>
-              <span style={{ fontSize: '13.5px', color: '#cbd5e1', fontWeight: 600 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '4px' }}>
+              <span style={{ fontSize: '12.5px', color: '#94a3b8' }}>Metode Bayar</span>
+              <span style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: 600 }}>
                 {namaMetodeBayar}
               </span>
             </div>
-            <div style={{ height: '1px', background: '#1e2638', margin: '10px 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '14px', fontWeight: 600, color: '#e2e8f0' }}>Total Biaya</span>
-              <span style={{ fontSize: '18px', fontWeight: 800, color: '#10b981' }}>{hargaFormatted}</span>
+            <div style={{ height: '1px', background: '#1e2638', margin: '8px 0' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+              <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#e2e8f0' }}>Total Biaya</span>
+              <span style={{ fontSize: '17px', fontWeight: 800, color: '#10b981' }}>{hargaFormatted}</span>
             </div>
           </div>
 
@@ -643,10 +630,10 @@ export default function UserPage() {
               background: isSubmitting ? '#059669' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
               color: '#000',
               border: 'none',
-              padding: '15px',
+              padding: '14px',
               borderRadius: '10px',
               fontWeight: 800,
-              fontSize: '15px',
+              fontSize: 'clamp(13.5px, 3.5vw, 15px)',
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
               boxShadow: '0 4px 15px rgba(16,185,129,0.3)',
               display: 'flex',
@@ -664,7 +651,7 @@ export default function UserPage() {
               <span>💳 Lanjutkan ke Pembayaran ({selectedEwallet}) ➔</span>
             )}
           </button>
-          <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '12px', color: '#94a3b8' }}>
+          <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '11.5px', color: '#94a3b8' }}>
             ℹ️ Anda akan melihat barcode QRIS / info pembayaran terlebih dahulu untuk di-scan, sebelum lanjut ke WhatsApp.
           </div>
         </form>
@@ -672,33 +659,8 @@ export default function UserPage() {
 
       {/* HALAMAN / MODAL PEMBAYARAN PADA GAMBAR (SCAN QRIS & TOMBOL LANJUT KE WA) */}
       {modalData && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(6px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '12px'
-        }}>
-          <div style={{
-            background: '#0e1424',
-            border: '1px solid #1e2638',
-            borderRadius: '16px',
-            maxWidth: '440px',
-            width: '100%',
-            maxHeight: '94vh',
-            overflowY: 'auto',
-            padding: '20px 18px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.7)',
-            color: '#f1f5f9',
-            textAlign: 'center'
-          }}>
+        <div className="modal-backdrop">
+          <div className="modal-box">
             {/* Header Modal */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <span style={{
@@ -706,7 +668,7 @@ export default function UserPage() {
                 color: '#10b981',
                 padding: '4px 10px',
                 borderRadius: '6px',
-                fontSize: '12px',
+                fontSize: '11.5px',
                 fontWeight: 700
               }}>
                 Pesanan: {modalData.id}
@@ -719,7 +681,7 @@ export default function UserPage() {
                   color: '#94a3b8',
                   fontSize: '22px',
                   cursor: 'pointer',
-                  padding: '0 4px',
+                  padding: '0 6px',
                   lineHeight: 1
                 }}
               >
@@ -743,12 +705,12 @@ export default function UserPage() {
                   }}
                 />
               )}
-              <h2 style={{ fontSize: '19px', fontWeight: 800, margin: 0, color: '#fff' }}>
+              <h2 style={{ fontSize: 'clamp(17px, 4vw, 19px)', fontWeight: 800, margin: 0, color: '#fff' }}>
                 {modalData.isQris ? 'Scan Barcode QRIS' : `Bayar via ${modalData.metode}`}
               </h2>
             </div>
 
-            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 12px 0' }}>
+            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 10px 0' }}>
               {modalData.isQris
                 ? 'Scan QRIS di bawah ini dengan E-Wallet atau M-Banking Anda terlebih dahulu, lalu klik tombol hijau untuk mengirim bukti ke WhatsApp.'
                 : 'Transfer sesuai nominal tagihan, lalu klik tombol hijau di bawah untuk mengirim bukti transfer ke WhatsApp.'}
@@ -765,8 +727,8 @@ export default function UserPage() {
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
-              <span style={{ fontSize: '13px', color: '#94a3b8' }}>Total Tagihan:</span>
-              <span style={{ fontSize: '19px', fontWeight: 800, color: '#10b981' }}>
+              <span style={{ fontSize: '12.5px', color: '#94a3b8' }}>Total Tagihan:</span>
+              <span style={{ fontSize: '18px', fontWeight: 800, color: '#10b981' }}>
                 {modalData.total}
               </span>
             </div>
@@ -776,19 +738,21 @@ export default function UserPage() {
               <div>
                 <div style={{
                   background: '#ffffff',
-                  padding: '10px',
+                  padding: '8px',
                   borderRadius: '12px',
                   display: 'inline-block',
                   margin: '0 auto 10px auto',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                  maxWidth: '100%'
                 }}>
                   <img
                     src={qrisImg}
                     alt="Barcode QRIS Elite Boosting"
                     style={{
-                      maxWidth: '230px',
+                      maxWidth: '220px',
                       width: '100%',
-                      height: 'auto',
+                      maxHeight: '42vh',
+                      objectFit: 'contain',
                       display: 'block',
                       borderRadius: '6px'
                     }}
@@ -809,10 +773,10 @@ export default function UserPage() {
                       width: '100%',
                       background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                       color: '#000',
-                      padding: '13px',
+                      padding: '12px',
                       borderRadius: '10px',
                       fontWeight: 800,
-                      fontSize: '14.5px',
+                      fontSize: '14px',
                       textDecoration: 'none',
                       boxSizing: 'border-box',
                       boxShadow: '0 4px 15px rgba(16,185,129,0.35)'
@@ -832,7 +796,7 @@ export default function UserPage() {
                       color: '#38bdf8',
                       padding: '9px',
                       borderRadius: '8px',
-                      fontSize: '12.5px',
+                      fontSize: '12px',
                       fontWeight: 600,
                       textDecoration: 'none',
                       boxSizing: 'border-box'
@@ -849,7 +813,7 @@ export default function UserPage() {
                   borderRadius: '10px',
                   padding: '10px 12px',
                   textAlign: 'left',
-                  fontSize: '12px',
+                  fontSize: '11.5px',
                   lineHeight: '1.5',
                   color: '#cbd5e1'
                 }}>
@@ -877,8 +841,8 @@ export default function UserPage() {
                       src={EWALLET_LOGOS[modalData.ewalletType || selectedEwallet]}
                       alt="Logo E-Wallet"
                       style={{
-                        width: '42px',
-                        height: '42px',
+                        width: '40px',
+                        height: '40px',
                         borderRadius: '8px',
                         objectFit: 'contain',
                         background: (modalData.ewalletType || selectedEwallet) === 'ShopeePay' ? '#fff' : 'transparent',
@@ -887,7 +851,7 @@ export default function UserPage() {
                     />
                     <div>
                       <div style={{ fontSize: '11px', color: '#94a3b8' }}>Nomor Tujuan {modalData.metode}:</div>
-                      <div style={{ fontSize: '19px', fontWeight: 800, color: '#38bdf8' }}>
+                      <div style={{ fontSize: '18px', fontWeight: 800, color: '#38bdf8' }}>
                         {EWALLET_CONFIG.number}
                       </div>
                       <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
@@ -929,10 +893,10 @@ export default function UserPage() {
                     width: '100%',
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: '#000',
-                    padding: '13px',
+                    padding: '12px',
                     borderRadius: '10px',
                     fontWeight: 800,
-                    fontSize: '14.5px',
+                    fontSize: '14px',
                     textDecoration: 'none',
                     boxSizing: 'border-box',
                     boxShadow: '0 4px 15px rgba(16,185,129,0.35)',
@@ -948,7 +912,7 @@ export default function UserPage() {
                   borderRadius: '10px',
                   padding: '10px 12px',
                   textAlign: 'left',
-                  fontSize: '12px',
+                  fontSize: '11.5px',
                   lineHeight: '1.5',
                   color: '#cbd5e1'
                 }}>
@@ -968,9 +932,9 @@ export default function UserPage() {
                 background: 'transparent',
                 border: 'none',
                 color: '#94a3b8',
-                fontSize: '12.5px',
+                fontSize: '12px',
                 cursor: 'pointer',
-                marginTop: '10px'
+                marginTop: '8px'
               }}
             >
               Tutup Jendela Ini

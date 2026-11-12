@@ -4,6 +4,8 @@
   "private": true,
   "description": "Fullstack Toko Joki - Elite Boosting",
   "scripts": {
+    "dev": "npm --prefix client run dev",
+    "dev:server": "node server/server.js",
     "build": "cd client && npm install && npm run build",
     "start": "node server/server.js"
   },
